@@ -121,10 +121,11 @@
       public void SetBoost(string boost)
       {
          float boostReturn;
-
+         
          if (float.TryParse(boost, out boostReturn))
          {
             Boost = boostReturn;
+            return;
          }
 
          Boost = 1;
