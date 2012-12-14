@@ -34,9 +34,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="IKVM.OpenJDK.Core">
+      <HintPath>..\lib\IKVM.OpenJDK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.SwingAWT">
+      <HintPath>..\lib\IKVM.OpenJDK.SwingAWT.dll</HintPath>
+    </Reference>
     <Reference Include="Lucene.Net">
       <HintPath>..\references\Lucene.Net.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="pdfbox-1.6.0">
+      <HintPath>..\lib\pdfbox-1.6.0.dll</HintPath>
     </Reference>
     <Reference Include="Sitecore.Kernel">
       <HintPath>..\references\Sitecore.Kernel.dll</HintPath>
@@ -62,6 +71,7 @@
     <Compile Include="Utilities\IdHelper.cs" />
     <Compile Include="IndexConstants.cs" />
     <Compile Include="Utilities\ItemUtil.cs" />
+    <Compile Include="Utilities\PdfHelper.cs" />
     <Compile Include="Utilities\QueryTranslator.cs" />
     <Compile Include="Utilities\SearchHelper.cs" />
     <Compile Include="SkinnyItem.cs" />
