@@ -6,6 +6,7 @@ using System.Xml;
 using Sitecore.Collections;
 using Sitecore.Data;
 using Sitecore.Data.Items;
+using Sitecore.Data.Managers;
 using Sitecore.Diagnostics;
 using Lucene.Net.Documents;
 using Sitecore.Reflection;
@@ -30,9 +31,15 @@ namespace scSearchContrib.Crawler.Crawlers
         private List<BaseDynamicField> _dynamicFields = new List<BaseDynamicField>();
         private SafeDictionary<string, string> _fieldCrawlers = new SafeDictionary<string, string>();
         private readonly SafeDictionary<string, bool> _fieldFilter = new SafeDictionary<string, bool>();
+        private readonly SafeDictionary<string, bool> _baseTemplateFilter = new SafeDictionary<string, bool>();
+        private readonly SafeDictionary<string, bool> _pathFilter = new SafeDictionary<string, bool>();
         private SafeDictionary<string, SearchField> _fieldTypes = new SafeDictionary<string, SearchField>();
         private bool _hasFieldExcludes;
         private bool _hasFieldIncludes;
+        private bool _hasBaseTemplateExcludes;
+        private bool _hasBaseTemplateIncludes;
+        private bool _hasPathExcludes;
+        private bool _hasPathIncludes;
         private bool _hasFieldTypeExcludes;
 
         #endregion
@@ -85,6 +92,33 @@ namespace scSearchContrib.Crawler.Crawlers
             {
                 ProcessField(document, BuiltinFields.Content, value, LuceneField.Store.NO, LuceneField.Index.TOKENIZED);
             }
+        }
+
+        protected override bool IsMatch(Item item)
+        {
+            var isMatch = base.IsMatch(item);
+            
+            // handle base template filters
+            var flag = false;
+            var template = TemplateManager.GetTemplate(item);
+            if (template.GetBaseTemplates().Any(baseTemplate => _baseTemplateFilter.TryGetValue(baseTemplate.ID.ToString(), out flag)))
+            {
+                isMatch = isMatch && flag;
+            }
+            else
+            {
+                isMatch = isMatch && !HasBaseTemplateIncludes;
+            }
+
+            // handle path filters
+            flag = true;
+            IEnumerable<string> sortedPaths = _pathFilter.Keys.OrderBy(path => path.Length);
+            foreach (var path in sortedPaths.Where(path => item.Paths.FullPath.Contains(path)))
+            {
+                flag = _pathFilter[path];
+            }
+
+            return isMatch && flag;
         }
 
         #endregion
@@ -164,6 +198,36 @@ namespace scSearchContrib.Crawler.Crawlers
             Assert.IsTrue(ID.IsID(value), "fieldId parameter is not a valid GUID");
             _hasFieldIncludes = true;
             _fieldFilter[value] = true;
+        }
+
+        public void ExcludeBaseTemplate(string value)
+        {
+            Assert.ArgumentNotNullOrEmpty(value, "template");
+            Assert.IsTrue(ID.IsID(value), "template parameter is not a valid GUID");
+            _hasBaseTemplateExcludes = true;
+            _baseTemplateFilter[value] = false;
+        }
+
+        public void IncludeBaseTemplate(string value)
+        {
+            Assert.ArgumentNotNullOrEmpty(value, "template");
+            Assert.IsTrue(ID.IsID(value), "template parameter is not a valid GUID");
+            _hasBaseTemplateIncludes = true;
+            _baseTemplateFilter[value] = true;   
+        }
+
+        public void ExcludePath(string value)
+        {
+            Assert.ArgumentNotNullOrEmpty(value, "path");
+            _hasPathExcludes = true;
+            _pathFilter[value] = false;
+        }
+
+        public void IncludePath(string value)
+        {
+            Assert.ArgumentNotNullOrEmpty(value, "path");
+            _hasPathIncludes = true;
+            _pathFilter[value] = true;
         }
 
         protected virtual List<SCField> FilteredFields(Item item)
@@ -328,6 +392,30 @@ namespace scSearchContrib.Crawler.Crawlers
             {
                 _hasFieldIncludes = value;
             }
+        }
+
+        protected bool HasBaseTemplateExcludes
+        {
+            get { return _hasBaseTemplateExcludes; }
+            set { _hasBaseTemplateExcludes = value; }
+        }
+
+        protected bool HasBaseTemplateIncludes
+        {
+            get { return _hasBaseTemplateIncludes; }
+            set { _hasBaseTemplateIncludes = value; }
+        }
+
+        protected bool HasPathExcludes
+        {
+            get { return _hasPathExcludes; }
+            set { _hasPathExcludes = value; }
+        }
+
+        protected bool HasPathIncludes
+        {
+            get { return _hasPathIncludes; }
+            set { _hasPathIncludes = value; }
         }
 
         protected bool HasFieldTypeExcludes
