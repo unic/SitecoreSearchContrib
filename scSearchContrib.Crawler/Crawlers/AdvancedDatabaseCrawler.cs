@@ -96,6 +96,7 @@ namespace scSearchContrib.Crawler.Crawlers
 
         protected override bool IsMatch(Item item)
         {
+            // handle base filters
             var isMatch = base.IsMatch(item);
             
             // handle base template filters
