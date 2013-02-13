@@ -5,6 +5,8 @@ using scSearchContrib.Searcher.Utilities;
 
 namespace scSearchContrib.Crawler.FieldCrawlers
 {
+    using scSearchContrib.Crawler.Utilities;
+
     /// <summary>
     /// PdfMediaFieldCrawler extends FieldCrawlerBase from the Sitecore.Search 
     /// API to provide text streams of a given PDF document.
